@@ -7,6 +7,7 @@ import com.microsoft.playwright.Playwright;
 import com.mirai.automation.pages.HomePage;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import com.mirai.automation.config.Config;
 
 public class HomePageSmokeTest {
 
@@ -17,7 +18,7 @@ public class HomePageSmokeTest {
                     .launch(new BrowserType.LaunchOptions().setHeadless(false));
 
             Page page = browser.newPage();
-            page.navigate("https://www.stumbleguys.com/");
+            page.navigate(Config.BASE_URL);
 
             HomePage homePage = new HomePage(page);
             homePage.acceptCookies();
