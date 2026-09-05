@@ -4,6 +4,7 @@ import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
 import com.microsoft.playwright.options.WaitForSelectorState;
+import com.mirai.automation.config.Config;
 
 public class ScopelyAuthPage {
 
@@ -34,7 +35,7 @@ public class ScopelyAuthPage {
         pageHeading.waitFor(
                 new Locator.WaitForOptions()
                         .setState(WaitForSelectorState.VISIBLE)
-                        .setTimeout(30000)
+                        .setTimeout(Config.DEFAULT_TIMEOUT.toMillis())
         );
 
         emailField.fill(email);
@@ -48,7 +49,7 @@ public class ScopelyAuthPage {
         continueButton.waitFor(
                 new Locator.WaitForOptions()
                         .setState(WaitForSelectorState.VISIBLE)
-                        .setTimeout(30000)
+                        .setTimeout(Config.DEFAULT_TIMEOUT.toMillis())
         );
 
         continueButton.click();
@@ -56,7 +57,7 @@ public class ScopelyAuthPage {
         verificationHeading.waitFor(
                 new Locator.WaitForOptions()
                         .setState(WaitForSelectorState.VISIBLE)
-                        .setTimeout(30000)
+                        .setTimeout(Config.DEFAULT_TIMEOUT.toMillis())
         );
     }
 

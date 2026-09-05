@@ -1,12 +1,11 @@
 package com.mirai.automation.mobile.pages;
 
+import com.mirai.automation.config.Config;
 import io.appium.java_client.android.AndroidDriver;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-
-import java.time.Duration;
 
 public class MobileScopelyAuthPage {
 
@@ -28,7 +27,10 @@ public class MobileScopelyAuthPage {
             By.xpath("//*[contains(text(), \"We've sent a code to\")]");
 
     public MobileScopelyAuthPage(AndroidDriver driver) {
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(60));
+        this.wait = new WebDriverWait(
+                driver,
+                Config.DEFAULT_TIMEOUT
+        );
     }
 
     public void enterEmail(String email) {

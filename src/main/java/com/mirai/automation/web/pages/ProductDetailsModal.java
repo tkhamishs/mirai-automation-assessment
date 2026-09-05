@@ -3,6 +3,7 @@ package com.mirai.automation.web.pages;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.WaitForSelectorState;
+import com.mirai.automation.config.Config;
 
 public class ProductDetailsModal {
 
@@ -12,7 +13,8 @@ public class ProductDetailsModal {
         this.purchaseButton = page.locator(
                 "button[class*='DetailsModal_modal__price_button__']"
         ).filter(
-                new Locator.FilterOptions().setHasText(expectedPrice)
+                new Locator.FilterOptions()
+                        .setHasText(expectedPrice)
         );
     }
 
@@ -20,7 +22,7 @@ public class ProductDetailsModal {
         purchaseButton.waitFor(
                 new Locator.WaitForOptions()
                         .setState(WaitForSelectorState.VISIBLE)
-                        .setTimeout(30000)
+                        .setTimeout(Config.DEFAULT_TIMEOUT.toMillis())
         );
     }
 

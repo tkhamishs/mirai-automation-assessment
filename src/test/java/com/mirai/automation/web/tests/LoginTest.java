@@ -18,7 +18,10 @@ public class LoginTest {
     public void shouldReachEmailVerificationScreen() {
         try (Playwright playwright = Playwright.create();
              Browser browser = playwright.chromium()
-                     .launch(new BrowserType.LaunchOptions().setHeadless(false))) {
+                     .launch(
+                             new BrowserType.LaunchOptions()
+                                     .setHeadless(false)
+                     )) {
 
             Page page = browser.newPage();
 
@@ -35,15 +38,16 @@ public class LoginTest {
             LoginModal loginModal = new LoginModal(page);
             loginModal.continueWithEmail();
 
-            ScopelyAuthPage scopelyAuthPage = new ScopelyAuthPage(page);
+            ScopelyAuthPage scopelyAuthPage =
+                    new ScopelyAuthPage(page);
 
-            String email = "tarek_ce@hotmail.com";
-
-            scopelyAuthPage.enterEmail(email);
+            scopelyAuthPage.enterEmail(
+                    Config.TEST_EMAIL
+            );
 
             Assert.assertEquals(
                     scopelyAuthPage.getEmailValue(),
-                    email,
+                    Config.TEST_EMAIL,
                     "Email was not entered correctly"
             );
 
@@ -55,7 +59,9 @@ public class LoginTest {
             );
 
             Assert.assertTrue(
-                    scopelyAuthPage.getVerificationMessage().contains(email),
+                    scopelyAuthPage
+                            .getVerificationMessage()
+                            .contains(Config.TEST_EMAIL),
                     "Verification message does not contain the expected email"
             );
         }

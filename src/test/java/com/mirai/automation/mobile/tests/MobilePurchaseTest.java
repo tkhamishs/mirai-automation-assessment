@@ -21,12 +21,15 @@ public class MobilePurchaseTest {
             throws MalformedURLException {
 
         UiAutomator2Options options = new UiAutomator2Options()
-                .setDeviceName("emulator-5554");
+                .setDeviceName(Config.MOBILE_DEVICE_NAME);
 
-        options.setCapability("browserName", "Chrome");
+        options.setCapability(
+                "browserName",
+                Config.MOBILE_BROWSER_NAME
+        );
 
         AndroidDriver driver = new AndroidDriver(
-                new URL("http://127.0.0.1:4723"),
+                new URL(Config.APPIUM_SERVER_URL),
                 options
         );
 

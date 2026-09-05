@@ -35,7 +35,7 @@ public class ShopPage {
         productCards.first().waitFor(
                 new Locator.WaitForOptions()
                         .setState(WaitForSelectorState.VISIBLE)
-                        .setTimeout(30000)
+                        .setTimeout(Config.DEFAULT_TIMEOUT.toMillis())
         );
     }
 

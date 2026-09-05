@@ -1,5 +1,6 @@
 package com.mirai.automation.mobile.tests;
 
+import com.mirai.automation.config.Config;
 import com.mirai.automation.mobile.pages.MobileHomePage;
 import com.mirai.automation.mobile.pages.MobileLoginModal;
 import com.mirai.automation.mobile.pages.MobileScopelyAuthPage;
@@ -12,7 +13,6 @@ import org.testng.annotations.Test;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.time.Duration;
 
 public class MobileLoginTest {
 
@@ -21,17 +21,20 @@ public class MobileLoginTest {
             throws MalformedURLException {
 
         UiAutomator2Options options = new UiAutomator2Options()
-                .setDeviceName("emulator-5554");
+                .setDeviceName(Config.MOBILE_DEVICE_NAME);
 
-        options.setCapability("browserName", "Chrome");
+        options.setCapability(
+                "browserName",
+                Config.MOBILE_BROWSER_NAME
+        );
 
         AndroidDriver driver = new AndroidDriver(
-                new URL("http://127.0.0.1:4723"),
+                new URL(Config.APPIUM_SERVER_URL),
                 options
         );
 
         try {
-            driver.get("https://www.stumbleguys.com/");
+            driver.get(Config.BASE_URL);
 
             MobileHomePage mobileHomePage =
                     new MobileHomePage(driver);
@@ -46,7 +49,10 @@ public class MobileLoginTest {
             mobileLoginModal.continueWithEmail();
 
             WebDriverWait wait =
-                    new WebDriverWait(driver, Duration.ofSeconds(60));
+                    new WebDriverWait(
+                            driver,
+                            Config.DEFAULT_TIMEOUT
+                    );
 
             wait.until(
                     ExpectedConditions.urlContains("id.scopely.com")
@@ -55,13 +61,13 @@ public class MobileLoginTest {
             MobileScopelyAuthPage scopelyAuthPage =
                     new MobileScopelyAuthPage(driver);
 
-            String email = "tarek_ce@hotmail.com";
-
-            scopelyAuthPage.enterEmail(email);
+            scopelyAuthPage.enterEmail(
+                    Config.TEST_EMAIL
+            );
 
             Assert.assertEquals(
                     scopelyAuthPage.getEmailValue(),
-                    email,
+                    Config.TEST_EMAIL,
                     "Email was not entered correctly on mobile web"
             );
 
@@ -73,7 +79,9 @@ public class MobileLoginTest {
             );
 
             Assert.assertTrue(
-                    scopelyAuthPage.getVerificationMessage().contains(email),
+                    scopelyAuthPage
+                            .getVerificationMessage()
+                            .contains(Config.TEST_EMAIL),
                     "Verification message does not contain the expected email"
             );
 

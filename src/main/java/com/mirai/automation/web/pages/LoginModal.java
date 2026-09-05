@@ -3,6 +3,7 @@ package com.mirai.automation.web.pages;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.WaitForSelectorState;
+import com.mirai.automation.config.Config;
 
 public class LoginModal {
 
@@ -21,7 +22,7 @@ public class LoginModal {
         continueWithEmailButton.waitFor(
                 new Locator.WaitForOptions()
                         .setState(WaitForSelectorState.VISIBLE)
-                        .setTimeout(30000)
+                        .setTimeout(Config.DEFAULT_TIMEOUT.toMillis())
         );
 
         return continueWithEmailButton.isVisible();
@@ -31,10 +32,12 @@ public class LoginModal {
         continueWithEmailButton.waitFor(
                 new Locator.WaitForOptions()
                         .setState(WaitForSelectorState.VISIBLE)
-                        .setTimeout(30000)
+                        .setTimeout(Config.DEFAULT_TIMEOUT.toMillis())
         );
 
-        long deadline = System.currentTimeMillis() + 30000;
+        long deadline =
+                System.currentTimeMillis()
+                        + Config.DEFAULT_TIMEOUT.toMillis();
 
         while (!page.url().contains("id.scopely.com")
                 && System.currentTimeMillis() < deadline) {
