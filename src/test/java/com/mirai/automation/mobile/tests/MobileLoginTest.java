@@ -14,7 +14,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
 
-public class MobileWebSmokeTest {
+public class MobileLoginTest {
 
     @Test
     public void shouldReachEmailVerificationScreenInMobileChrome()
@@ -33,7 +33,9 @@ public class MobileWebSmokeTest {
         try {
             driver.get("https://www.stumbleguys.com/");
 
-            MobileHomePage mobileHomePage = new MobileHomePage(driver);
+            MobileHomePage mobileHomePage =
+                    new MobileHomePage(driver);
+
             mobileHomePage.acceptCookies();
             mobileHomePage.openMobileMenu();
             mobileHomePage.openLogin();

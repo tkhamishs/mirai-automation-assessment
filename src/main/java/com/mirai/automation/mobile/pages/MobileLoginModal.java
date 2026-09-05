@@ -19,9 +19,21 @@ public class MobileLoginModal {
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(60));
     }
 
+    public boolean isVisible() {
+        WebElement emailLogo = wait.until(
+                ExpectedConditions.visibilityOfElementLocated(
+                        continueWithEmailButton
+                )
+        );
+
+        return emailLogo.isDisplayed();
+    }
+
     public void continueWithEmail() {
         WebElement emailLogo = wait.until(
-                ExpectedConditions.visibilityOfElementLocated(continueWithEmailButton)
+                ExpectedConditions.visibilityOfElementLocated(
+                        continueWithEmailButton
+                )
         );
 
         WebElement button = emailLogo.findElement(
