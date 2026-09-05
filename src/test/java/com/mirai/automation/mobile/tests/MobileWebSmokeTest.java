@@ -2,9 +2,9 @@ package com.mirai.automation.mobile.tests;
 
 import com.mirai.automation.mobile.pages.MobileHomePage;
 import com.mirai.automation.mobile.pages.MobileLoginModal;
+import com.mirai.automation.mobile.pages.MobileScopelyAuthPage;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.options.UiAutomator2Options;
-import org.openqa.selenium.By;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
@@ -17,7 +17,7 @@ import java.time.Duration;
 public class MobileWebSmokeTest {
 
     @Test
-    public void shouldOpenScopelyEmailLoginInMobileChrome()
+    public void shouldReachEmailVerificationScreenInMobileChrome()
             throws MalformedURLException {
 
         UiAutomator2Options options = new UiAutomator2Options()
@@ -34,7 +34,6 @@ public class MobileWebSmokeTest {
             driver.get("https://www.stumbleguys.com/");
 
             MobileHomePage mobileHomePage = new MobileHomePage(driver);
-
             mobileHomePage.acceptCookies();
             mobileHomePage.openMobileMenu();
             mobileHomePage.openLogin();
@@ -51,18 +50,29 @@ public class MobileWebSmokeTest {
                     ExpectedConditions.urlContains("id.scopely.com")
             );
 
+            MobileScopelyAuthPage scopelyAuthPage =
+                    new MobileScopelyAuthPage(driver);
+
+            String email = "tarek_ce@hotmail.com";
+
+            scopelyAuthPage.enterEmail(email);
+
+            Assert.assertEquals(
+                    scopelyAuthPage.getEmailValue(),
+                    email,
+                    "Email was not entered correctly on mobile web"
+            );
+
+            scopelyAuthPage.continueLogin();
+
             Assert.assertTrue(
-                    driver.getCurrentUrl().contains("id.scopely.com"),
-                    "Scopely authentication page did not open on mobile web"
+                    scopelyAuthPage.isVerificationScreenVisible(),
+                    "Verification screen was not displayed on mobile web"
             );
 
             Assert.assertTrue(
-                    wait.until(
-                            ExpectedConditions.visibilityOfElementLocated(
-                                    By.xpath("//*[contains(text(), \"Let's get you in\")]")
-                            )
-                    ).isDisplayed(),
-                    "Scopely login page was not displayed on mobile web"
+                    scopelyAuthPage.getVerificationMessage().contains(email),
+                    "Verification message does not contain the expected email"
             );
 
         } finally {
