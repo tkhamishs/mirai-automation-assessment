@@ -17,6 +17,16 @@ public class LoginModal {
         );
     }
 
+    public boolean isVisible() {
+        continueWithEmailButton.waitFor(
+                new Locator.WaitForOptions()
+                        .setState(WaitForSelectorState.VISIBLE)
+                        .setTimeout(30000)
+        );
+
+        return continueWithEmailButton.isVisible();
+    }
+
     public void continueWithEmail() {
         continueWithEmailButton.waitFor(
                 new Locator.WaitForOptions()
