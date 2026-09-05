@@ -10,7 +10,7 @@ public class ShopPage {
 
     private final Page page;
     private final Locator acceptCookiesButton;
-    private final Locator productButtons;
+    private final Locator productCards;
 
     public ShopPage(Page page) {
         this.page = page;
@@ -20,8 +20,8 @@ public class ShopPage {
                 new Page.GetByRoleOptions().setName("Accept All")
         );
 
-        this.productButtons = page.locator("button").filter(
-                new Locator.FilterOptions().setHasText("SAR")
+        this.productCards = page.locator(
+                "div[class*='Card_card__']"
         );
     }
 
@@ -32,7 +32,7 @@ public class ShopPage {
             acceptCookiesButton.click();
         }
 
-        productButtons.first().waitFor(
+        productCards.first().waitFor(
                 new Locator.WaitForOptions()
                         .setState(WaitForSelectorState.VISIBLE)
                         .setTimeout(30000)
@@ -40,10 +40,10 @@ public class ShopPage {
     }
 
     public int getAvailableProductCount() {
-        return productButtons.count();
+        return productCards.count();
     }
 
     public ProductCard getFirstAvailableProduct() {
-        return new ProductCard(productButtons.first());
+        return new ProductCard(productCards.first());
     }
 }

@@ -6,6 +6,7 @@ import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import com.mirai.automation.web.pages.LoginModal;
 import com.mirai.automation.web.pages.ProductCard;
+import com.mirai.automation.web.pages.ProductDetailsModal;
 import com.mirai.automation.web.pages.ShopPage;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -39,11 +40,17 @@ public class PurchaseTest {
 
             product.open();
 
+            ProductDetailsModal productDetailsModal =
+                    new ProductDetailsModal(page, productPrice);
+
+            productDetailsModal.waitUntilVisible();
+            productDetailsModal.purchase();
+
             LoginModal loginModal = new LoginModal(page);
 
             Assert.assertTrue(
                     loginModal.isVisible(),
-                    "Login modal was not displayed when starting the purchase flow"
+                    "Login modal was not displayed after clicking the purchase button"
             );
         }
     }
