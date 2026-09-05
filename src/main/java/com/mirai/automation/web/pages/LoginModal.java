@@ -1,4 +1,4 @@
-package com.mirai.automation.pages;
+package com.mirai.automation.web.pages;
 
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;

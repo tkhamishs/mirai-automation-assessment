@@ -1,4 +1,4 @@
-package com.mirai.automation.tests;
+package com.mirai.automation.web.tests;
 
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserType;
@@ -6,20 +6,19 @@ import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.options.WaitUntilState;
 import com.mirai.automation.config.Config;
-import com.mirai.automation.pages.HomePage;
-import com.mirai.automation.pages.LoginModal;
-import com.mirai.automation.pages.ScopelyAuthPage;
+import com.mirai.automation.web.pages.HomePage;
+import com.mirai.automation.web.pages.LoginModal;
+import com.mirai.automation.web.pages.ScopelyAuthPage;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-public class HomePageSmokeTest {
+public class LoginTest {
 
     @Test
-    public void shouldOpenStumbleGuysWebsite() {
-        try (Playwright playwright = Playwright.create()) {
-
-            Browser browser = playwright.chromium()
-                    .launch(new BrowserType.LaunchOptions().setHeadless(false));
+    public void shouldReachEmailVerificationScreen() {
+        try (Playwright playwright = Playwright.create();
+             Browser browser = playwright.chromium()
+                     .launch(new BrowserType.LaunchOptions().setHeadless(false))) {
 
             Page page = browser.newPage();
 
@@ -39,6 +38,7 @@ public class HomePageSmokeTest {
             ScopelyAuthPage scopelyAuthPage = new ScopelyAuthPage(page);
 
             String email = "tarek_ce@hotmail.com";
+
             scopelyAuthPage.enterEmail(email);
 
             Assert.assertEquals(
@@ -47,7 +47,17 @@ public class HomePageSmokeTest {
                     "Email was not entered correctly"
             );
 
-            browser.close();
+            scopelyAuthPage.continueLogin();
+
+            Assert.assertTrue(
+                    scopelyAuthPage.isVerificationScreenVisible(),
+                    "Verification screen was not displayed"
+            );
+
+            Assert.assertTrue(
+                    scopelyAuthPage.getVerificationMessage().contains(email),
+                    "Verification message does not contain the expected email"
+            );
         }
     }
 }
