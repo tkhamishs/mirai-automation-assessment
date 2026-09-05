@@ -7,6 +7,8 @@ import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.options.WaitUntilState;
 import com.mirai.automation.config.Config;
 import com.mirai.automation.pages.HomePage;
+import com.mirai.automation.pages.LoginModal;
+import com.mirai.automation.pages.ScopelyAuthPage;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -31,9 +33,18 @@ public class HomePageSmokeTest {
             homePage.acceptCookies();
             homePage.openLogin();
 
-            Assert.assertTrue(
-                    page.url().contains("stumbleguys.com"),
-                    "Stumble Guys website did not open successfully"
+            LoginModal loginModal = new LoginModal(page);
+            loginModal.continueWithEmail();
+
+            ScopelyAuthPage scopelyAuthPage = new ScopelyAuthPage(page);
+
+            String email = "tarek_ce@hotmail.com";
+            scopelyAuthPage.enterEmail(email);
+
+            Assert.assertEquals(
+                    scopelyAuthPage.getEmailValue(),
+                    email,
+                    "Email was not entered correctly"
             );
 
             browser.close();
