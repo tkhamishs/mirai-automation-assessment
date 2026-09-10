@@ -8,7 +8,9 @@ public class MobileProductCard {
     private final WebElement root;
 
     private final By priceButton =
-            By.cssSelector("button[class*='Card_card__price_button__']");
+            By.xpath(
+                    ".//button[.//span[contains(@class,'uppercase')]]"
+            );
 
     public MobileProductCard(WebElement root) {
         this.root = root;
