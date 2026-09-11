@@ -1,200 +1,607 @@
 # Mirai QA Automation Assessment
 
-Automation project for the QA Automation Lead assessment using:
+This project contains the automation framework I created for the Mirai / Scopely QA Automation Lead assessment.
 
-https://www.stumbleguys.com/
+It covers the Stumble Guys web store on:
 
-Covered flows:
+- Desktop Web using Playwright
+- Android Mobile Web using Appium and Selenium
 
-- Desktop Web Login
-- Desktop Web Purchase
-- Android Mobile Web Login
-- Android Mobile Web Purchase
+The implemented scenarios are:
 
-## Tech Stack
+1. Login flow
+2. Purchase flow up to the payment confirmation stage
+
+The purchase flow intentionally stops before any real transaction is performed.
+
+---
+
+## Technology Stack
 
 - Java 21
 - Maven
 - TestNG
-- Playwright
-- Selenium WebDriver
-- Appium 2
+- Playwright Java
+- Selenium
+- Appium
 - UiAutomator2
+- Android Chrome
 
-## Project Structure
+---
+
+## Framework Structure
 
 ```text
-src
-├── main
-│   └── java
-│       └── com.mirai.automation
-│           ├── config
-│           ├── web.pages
-│           └── mobile.pages
-└── test
-    └── java
-        └── com.mirai.automation
-            ├── web.tests
-            └── mobile.tests
-```
+mirai-automation-assessment/
+├── pom.xml
+├── README.md
+├── .gitignore
+└── src/
+    ├── main/
+    │   └── java/
+    │       └── com/mirai/automation/
+    │           ├── config/
+    │           │   └── Config.java
+    │           │
+    │           ├── web/pages/
+    │           │   ├── CheckoutPage.java
+    │           │   ├── HomePage.java
+    │           │   ├── LoginModal.java
+    │           │   ├── ProductCard.java
+    │           │   ├── ProductDetailsModal.java
+    │           │   ├── ScopelyAuthPage.java
+    │           │   └── ShopPage.java
+    │           │
+    │           ├── mobile/pages/
+    │           │   ├── MobileCheckoutPage.java
+    │           │   ├── MobileHomePage.java
+    │           │   ├── MobileLoginModal.java
+    │           │   ├── MobileProductCard.java
+    │           │   ├── MobileProductDetailsModal.java
+    │           │   ├── MobileScopelyAuthPage.java
+    │           │   └── MobileShopPage.java
+    │           │
+    │           └── review/
+    │               ├── FailureClassifier.java
+    │               ├── ReviewReport.java
+    │               ├── ReviewReportWriter.java
+    │               └── TestReviewAgent.java
+    │
+    └── test/
+        ├── java/
+        │   └── com/mirai/automation/
+        │       ├── web/
+        │       │   ├── base/
+        │       │   │   └── BaseWebTest.java
+        │       │   └── tests/
+        │       │       ├── LoginTest.java
+        │       │       ├── PurchaseTest.java
+        │       │       └── SaveAuthStateTest.java
+        │       │
+        │       ├── mobile/
+        │       │   ├── base/
+        │       │   │   └── BaseMobileTest.java
+        │       │   └── tests/
+        │       │       ├── MobileLoginTest.java
+        │       │       └── MobilePurchaseTest.java
+        │       │
+        │       └── review/
+        │           ├── MobileTestContext.java
+        │           ├── TestContext.java
+        │           ├── TestReviewAgentTest.java
+        │           └── TestReviewListener.java
+        │
+        └── resources/
+            └── META-INF/services/
+                └── org.testng.ITestNGListener
+Design Approach
 
-Page Object Model is used to keep page actions separate from the test scenarios.
+The framework follows the Page Object Model.
 
-## Prerequisites
+The test classes contain the scenarios and assertions, while the page objects contain the UI-specific implementation such as:
 
-- Java 21
-- Maven
-- Node.js
-- Appium 2
-- Android Studio
-- Android Emulator
-- Chrome installed on the emulator
+locators
+waits
+browser interactions
+iframe handling
+reusable page actions
 
-Quick checks:
+Desktop and mobile have separate page objects because Playwright and Appium/Selenium use different APIs, and the UI can behave differently between desktop and mobile.
 
-```bash
-java -version
-mvn -version
-appium -v
-adb devices
-```
+Common browser and driver setup is handled in:
 
-## Desktop Setup
+BaseWebTest
+BaseMobileTest
 
-Install Playwright Chromium:
+This keeps setup and teardown logic out of the individual tests and avoids duplication.
 
-```bash
-mvn exec:java \
--Dexec.mainClass=com.microsoft.playwright.CLI \
--Dexec.args="install chromium"
-```
+Desktop Web
 
-## Mobile Setup
+Desktop automation uses Playwright with Chromium.
 
-Tested with:
+Desktop Login Flow
 
-- Pixel 9 Android Emulator
-- Android 17
-- Chrome 149.0.7827.5
-- Appium 2.15.0
-- UiAutomator2 4.2.8
+Run:
 
-Make sure the emulator is running:
+mvn -Dtest=LoginTest test
 
-```bash
-adb devices
-```
+The test:
 
-Start Appium:
+Opens Stumble Guys
+Handles cookie consent
+Opens Login
+Selects Continue with Email
+Navigates to Scopely authentication
+Enters the configured email address
+Continues to the OTP verification screen
+Verifies that the OTP screen is displayed
 
-```bash
+OTP entry is manual.
+
+Desktop Authentication for Purchase Tests
+
+PurchaseTest uses a saved Playwright browser session stored in:
+
+auth-state.json
+
+This file is excluded from Git.
+
+A valid authenticated state must be created before running the desktop purchase test.
+
+Recommended Desktop Sequence
+1. Verify the Login Flow
+mvn -Dtest=LoginTest test
+
+This verifies that the login flow reaches the OTP screen correctly.
+
+2. Save the Authenticated Session
+
+Run:
+
+mvn -Dtest=SaveAuthStateTest test
+
+When the OTP screen appears, enter the OTP manually.
+
+After successful authentication, the test waits until the logged-in Stumble Guys UI is visible and then saves the browser state to:
+
+auth-state.json
+
+Successful output:
+
+Authenticated state saved to auth-state.json
+3. Run the Purchase Test
+mvn -Dtest=PurchaseTest test
+
+PurchaseTest loads the saved authentication state before opening the shop.
+
+If auth-state.json is missing, expired, or was not created after successful OTP verification, the application may redirect back to Login.
+
+Desktop Purchase Flow
+
+The test selects an available product dynamically instead of depending on a hardcoded product.
+
+The flow verifies:
+
+Shop is accessible
+At least one purchasable product is available
+Product price can be read
+Product details are opened
+Checkout opens successfully
+Payment type section is visible
+Card payment is selected
+Card number field is visible
+Expiry field is visible
+CVC field is visible
+Receipt email field is visible
+Checkout subtotal matches the selected product price
+Checkout currency is SAR
+Checkout total matches the selected product price
+Pay button is visible
+
+The test stops at this point.
+
+No card details are entered and the Pay button is not clicked.
+
+Checkout and iframe Handling
+
+The checkout page contains content from multiple embedded documents rather than one normal HTML page.
+
+The structure is roughly:
+
+Stumble Guys Page
+│
+└── Xsolla Payment iframe
+    │
+    ├── Payment options
+    ├── Subtotal
+    ├── Total
+    ├── Pay button
+    │
+    ├── Stripe Secure iframe
+    │   ├── Card Number
+    │   ├── Expiry
+    │   └── CVC
+    │
+    └── Secure Email iframe
+        └── Receipt Email
+
+The automation has to switch to the correct iframe before interacting with the elements inside it.
+
+For mobile Selenium/Appium automation, the framework switches between:
+
+default content
+→ payment iframe
+→ Stripe iframe
+
+and:
+
+default content
+→ payment iframe
+→ email iframe
+
+The payment UI can also re-render after changing the payment method. Because of that, frame references are located again when needed instead of relying on an older reference that may have become stale.
+
+Android Mobile Web
+
+Mobile Web automation runs through:
+
+Appium
+→ UiAutomator2
+→ Android Emulator
+→ Chrome
+→ Selenium WebDriver
+
+Tested setup:
+
+Android Emulator: Pixel 9
+Browser: Chrome
+Start Appium
+
+Start the Appium server before running the mobile tests:
+
 appium --allow-insecure uiautomator2:chromedriver_autodownload
-```
 
-The `chromedriver_autodownload` option is needed because the emulator Chrome version requires a compatible ChromeDriver.
+ChromeDriver auto-download is enabled because the Chrome version installed on the emulator must have a compatible ChromeDriver version.
 
-## Run Tests
+Mobile Login Flow
 
-All tests:
+Run:
 
-```bash
-mvn test
-```
+mvn -Dtest=MobileLoginTest test
+
+The test verifies:
+
+Stumble Guys opens in Chrome
+Cookie consent is handled
+Mobile menu opens
+Login is selected
+Continue with Email is selected
+Scopely authentication opens
+Email is entered
+OTP verification screen is displayed
+Verification text contains the expected email address
+Mobile Purchase Flow
+
+Run:
+
+mvn -Dtest=MobilePurchaseTest test
+
+The mobile purchase test performs login and purchase in the same Appium browser session.
+
+When the OTP screen appears, enter the OTP manually.
+
+The test then waits for both:
+
+Authenticated Stumble Guys URL
++
+Authenticated avatar
+
+before continuing.
+
+The full flow is:
+
+Login
+→ Manual OTP
+→ Authenticated UI
+→ Shop
+→ Product selection
+→ Product details
+→ Checkout
+→ Card payment
+→ Card form validation
+→ Price validation
+→ Stop before payment
+
+No card information is entered and payment is not confirmed.
+
+Authentication Prerequisite
+
+During testing, it was clarified that the Scopely account needs to have an existing Stumble Guys game state created through the mobile game.
+
+Without this prerequisite, successful Scopely authentication may not result in the expected authenticated web-store session.
+
+Why OTP Is Manual
+
+The OTP mailbox is outside the application under test.
+
+The framework does not store:
+
+mailbox passwords
+personal email credentials
+hardcoded OTP values
+provider-specific email credentials
+
+In a controlled test environment, OTP retrieval could be automated using a dedicated test mailbox or an approved email service.
+
+For this assessment, OTP is entered manually to avoid storing personal mailbox credentials or coupling the test framework to an external email provider.
+
+Synchronization Strategy
+
+The final framework does not use fixed sleeps for synchronization.
+
+There is no:
+
+Thread.sleep(...)
+
+and no:
+
+waitForTimeout(...)
+
+The tests wait for actual application conditions instead, including:
+
+element visibility
+element clickability
+URL changes
+iframe availability
+authenticated UI state
+product availability
+checkout visibility
+logged-in avatar visibility
+
+Timeout values are centralized in:
+
+Config.java
+
+This makes synchronization easier to maintain and avoids relying on arbitrary delays.
+
+Failure Review Agent
+
+I added a small failure review agent to help with first-level triage when a test fails.
+
+The flow is:
+
+Test failure
+    ↓
+TestNG Listener
+    ↓
+Failure evidence captured
+    ↓
+FailureClassifier
+    ↓
+TestReviewAgent
+    ↓
+ReviewReport
+    ↓
+Console output + report file
+
+The agent looks at the failure message, assigns a likely category, suggests a next action, and writes the result to a report.
+
+Example:
+
+========== QA REVIEW ==========
+
+Test Name: shouldCompletePurchaseFlowUntilPaymentConfirmation
+Status: FAIL
+Classification: Potential flaky issue
+Reason: The failure contains signs of a timing, stale element, or synchronization problem.
+Flaky Risk: High
+Next Action: Check synchronization, element re-rendering, and whether the failure reproduces consistently.
+
+===============================
+
+Reports are stored under:
+
+target/qa-review/
+Failure Classification
+
+Possible classifications include:
+
+Potential flaky issue
+Environment issue
+Product issue
+Automation issue
+Needs investigation
+
+For example:
+
+Timeout waiting for iframe
+
+can be classified as:
+
+Potential flaky issue
+
+because timing or synchronization failures can sometimes indicate flaky behavior.
+
+The classification is only an initial triage suggestion.
+
+A single timeout does not confirm that a test is flaky. Repeated execution history, reproducibility, environment state and application behavior still need to be checked.
+
+Failure Screenshots
+
+Screenshots are automatically captured when a desktop or mobile test fails.
+
+They are stored under:
+
+target/qa-review/screenshots/
+
+Example desktop screenshot:
+
+shouldCompletePurchaseFlowUntilPaymentConfirmation-web.png
+
+Example mobile screenshot:
+
+shouldReachEmailVerificationScreenInMobileChrome-mobile.png
+
+Desktop screenshots are captured through Playwright.
+
+Mobile screenshots are captured through Appium/Selenium TakesScreenshot.
+
+The screenshot is supporting evidence only. It does not affect the failure classification.
+
+Its purpose is to show the application state at the moment the test failed so the engineer investigating the issue has more context.
+
+Failure Screenshot Lifecycle
+
+Browser and driver lifecycle is handled through:
+
+BaseWebTest
+BaseMobileTest
+
+The test lifecycle is:
+
+@BeforeMethod
+    ↓
+Create browser / driver
+    ↓
+Store current Page / AndroidDriver
+    ↓
+Run test
+    ↓
+Failure occurs
+    ↓
+TestNG listener captures screenshot
+    ↓
+Failure review is generated
+    ↓
+@AfterMethod
+    ↓
+Browser / driver is closed
+
+Keeping the browser or driver alive until after the listener finishes allows failure evidence to be captured before teardown.
+
+Configuration
+
+Common values are stored in:
+
+src/main/java/com/mirai/automation/config/Config.java
+
+Configuration includes:
+
+Stumble Guys base URL
+test email
+Appium server URL
+Android device name
+mobile browser name
+Playwright headless setting
+common timeouts
+checkout timeout
+manual OTP timeout
+
+Centralizing these values avoids repeating configuration throughout the test and page classes.
+
+Running Individual Tests
 
 Desktop Login:
 
-```bash
 mvn -Dtest=LoginTest test
-```
+
+Save Desktop Authentication:
+
+mvn -Dtest=SaveAuthStateTest test
 
 Desktop Purchase:
 
-```bash
 mvn -Dtest=PurchaseTest test
-```
 
 Mobile Login:
 
-```bash
 mvn -Dtest=MobileLoginTest test
-```
 
 Mobile Purchase:
 
-```bash
 mvn -Dtest=MobilePurchaseTest test
-```
 
-## Login Flow
+Failure Review Agent Test:
 
-The login tests cover:
+mvn -Dtest=TestReviewAgentTest test
 
-1. Open Stumble Guys
-2. Accept cookies
-3. Open Login
-4. Continue with email
-5. Redirect to Scopely
-6. Enter the test email
-7. Continue to the email verification page
-8. Verify the email verification screen
+Compile without running tests:
 
-The automation stops at the email verification step. The OTP is sent to an external mailbox and is not handled by the automation.
+mvn -DskipTests test-compile
+Test Recordings
 
-## Purchase Flow
+Successful automation recordings are available here:
 
-The purchase tests:
+https://drive.google.com/drive/folders/1_uFk7-hG6GXncnud7SX705VZ9e1kGcX6?usp=sharing
 
-1. Open the shop
-2. Find the first available product
-3. Read the product price
-4. Open the product details
-5. Verify the same price
-6. Click the purchase button
-7. Verify that Login is requested
+The recordings cover:
 
-The product is selected dynamically instead of using a hardcoded product.
+Desktop Login Flow
+Desktop Purchase Flow
+Mobile Login Flow
+Mobile Purchase Flow
+Security and Safety
 
-No payment is completed.
+The following file is not committed:
 
-## Known Authentication Issue
+auth-state.json
 
-While testing the live website, I found an issue with the login session.
+It is included in .gitignore.
 
-After completing the Scopely email verification successfully, the browser returns to Stumble Guys, but the site still shows the user as logged out.
+The framework also does not contain:
 
-Starting a purchase asks for Login again.
+OTP values
+mailbox passwords
+payment card data
+private certificates
+external service credentials
 
-I reproduced the same behavior on:
+The checkout automation stops before any real transaction is performed.
 
-- Desktop Web
-- Android Mobile Web
+Known Limitations
+Manual OTP
 
-Because of this, the purchase automation cannot continue as an authenticated user to the payment step.
+OTP verification requires manual user interaction.
 
-The tests currently validate the purchase flow up to this blocker.
+Desktop Authentication State
 
-The issue appears to be related to the authenticated session not being persisted or recognized after returning from Scopely, but the exact root cause was not investigated from the backend side.
+Desktop purchase execution requires a valid auth-state.json.
 
-## Wait Strategy
+Mobile Authentication
 
-No implicit waits or `Thread.sleep()` are used.
+Mobile purchase performs login and manual OTP in the same Appium session.
 
-Desktop:
+External Payment Provider
 
-- Playwright auto-waiting
-- Visibility checks
-- URL conditions
+Checkout uses Xsolla and Stripe-hosted iframe components. Their DOM structure and loading behavior are outside the direct control of the Stumble Guys application.
 
-Mobile:
+Emulator / ChromeDriver Compatibility
 
-- `WebDriverWait`
-- Selenium expected conditions
+Android Chrome requires a compatible ChromeDriver. Appium is started with ChromeDriver auto-download enabled to support the browser version installed on the emulator.
 
-A retry is used in the desktop email-login navigation because the Login modal can become visible before the click action is fully ready.
+Failure Review Agent
 
-## Notes
+The failure review agent is intended to help with first-level investigation only. Its classification should not be treated as confirmed root cause without reviewing the actual failure evidence.
 
-- Desktop browser: Chromium
-- Mobile browser: Chrome on Android Emulator
-- Mobile Web is automated through Appium + Selenium
-- `auth-state.json` is excluded from Git because it may contain session cookies or tokens
+Repository
+
+GitHub:
+
+https://github.com/tkhamishs/mirai-automation-assessment
+
+Summary
+
+The main goal was to keep the test -mirai-automation-assessment/ios readable while separating browser interaction details from the test logic.
+
+The main design choices are:
+
+Page Object Model
+separate desktop and mobile page objects
+reusable browser and driver lifecycle
+centralized configuration
+condition-based synchronization
+meaningful assertions
+safe handling of authentication
+safe handling of live checkout
+automatic failure screenshots
+failure review agent for first-level triage
