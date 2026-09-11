@@ -1,71 +1,74 @@
 package com.mirai.automation.web.tests;
 
-import com.microsoft.playwright.Browser;
-import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Page;
-import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.options.WaitUntilState;
 import com.mirai.automation.config.Config;
+import com.mirai.automation.web.base.BaseWebTest;
 import com.mirai.automation.web.pages.HomePage;
 import com.mirai.automation.web.pages.LoginModal;
 import com.mirai.automation.web.pages.ScopelyAuthPage;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-public class LoginTest {
+public class LoginTest extends BaseWebTest {
 
     @Test
-    public void shouldReachEmailVerificationScreen() {
-        try (Playwright playwright = Playwright.create();
-             Browser browser = playwright.chromium()
-                     .launch(
-                             new BrowserType.LaunchOptions()
-                                     .setHeadless(false)
-                                     .setSlowMo(700)
-                     )) {
+    public void shouldNavigateToEmailVerificationScreen() {
 
-            Page page = browser.newPage();
+        page.navigate(
+                Config.BASE_URL,
+                new Page.NavigateOptions()
+                        .setWaitUntil(
+                                WaitUntilState.DOMCONTENTLOADED
+                        )
+        );
 
-            page.navigate(
-                    Config.BASE_URL,
-                    new Page.NavigateOptions()
-                            .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
-            );
+        HomePage homePage =
+                new HomePage(
+                        page
+                );
 
-            HomePage homePage = new HomePage(page);
-            homePage.acceptCookies();
-            homePage.openLogin();
+        homePage.acceptCookies();
 
-            LoginModal loginModal = new LoginModal(page);
-            loginModal.continueWithEmail();
+        homePage.openLogin();
 
-            ScopelyAuthPage scopelyAuthPage =
-                    new ScopelyAuthPage(page);
+        LoginModal loginModal =
+                new LoginModal(
+                        page
+                );
 
-            scopelyAuthPage.enterEmail(
-                    Config.TEST_EMAIL
-            );
+        loginModal.continueWithEmail();
 
-            Assert.assertEquals(
-                    scopelyAuthPage.getEmailValue(),
-                    Config.TEST_EMAIL,
-                    "Email was not entered correctly"
-            );
+        page.waitForURL(
+                url -> url.contains(
+                        "id.scopely.com"
+                ),
+                new Page.WaitForURLOptions()
+                        .setTimeout(
+                                Config.DEFAULT_TIMEOUT.toMillis()
+                        )
+        );
 
-            scopelyAuthPage.continueLogin();
+        ScopelyAuthPage scopelyAuthPage =
+                new ScopelyAuthPage(
+                        page
+                );
 
-            Assert.assertTrue(
-                    scopelyAuthPage.isVerificationScreenVisible(),
-                    "Verification screen was not displayed"
-            );
-            page.waitForTimeout(5000);
+        scopelyAuthPage.enterEmail(
+                Config.TEST_EMAIL
+        );
 
-            Assert.assertTrue(
-                    scopelyAuthPage
-                            .getVerificationMessage()
-                            .contains(Config.TEST_EMAIL),
-                    "Verification message does not contain the expected email"
-            );
-        }
+        Assert.assertEquals(
+                scopelyAuthPage.getEmailValue(),
+                Config.TEST_EMAIL,
+                "Email was not entered correctly"
+        );
+
+        scopelyAuthPage.continueLogin();
+
+        Assert.assertTrue(
+                scopelyAuthPage.isVerificationScreenVisible(),
+                "Email verification screen was not displayed"
+        );
     }
 }

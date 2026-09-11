@@ -3,8 +3,10 @@ package com.mirai.automation.web.tests;
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.BrowserType;
+import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
+import com.microsoft.playwright.options.WaitForSelectorState;
 import com.microsoft.playwright.options.WaitUntilState;
 import com.mirai.automation.config.Config;
 import com.mirai.automation.web.pages.HomePage;
@@ -18,13 +20,17 @@ public class SaveAuthStateTest {
 
     @Test
     public void saveAuthenticatedState() {
-        try (Playwright playwright = Playwright.create();
-             Browser browser = playwright.chromium()
-                     .launch(
-                             new BrowserType.LaunchOptions()
-                                     .setHeadless(false)
-                                     .setSlowMo(700)
-                     )) {
+
+        try (
+                Playwright playwright = Playwright.create();
+
+                Browser browser = playwright.chromium().launch(
+                        new BrowserType.LaunchOptions()
+                                .setHeadless(
+                                        Config.HEADLESS
+                                )
+                )
+        ) {
 
             BrowserContext context =
                     browser.newContext();
@@ -35,22 +41,30 @@ public class SaveAuthStateTest {
             page.navigate(
                     Config.BASE_URL,
                     new Page.NavigateOptions()
-                            .setWaitUntil(WaitUntilState.DOMCONTENTLOADED)
+                            .setWaitUntil(
+                                    WaitUntilState.DOMCONTENTLOADED
+                            )
             );
 
             HomePage homePage =
-                    new HomePage(page);
+                    new HomePage(
+                            page
+                    );
 
             homePage.acceptCookies();
             homePage.openLogin();
 
             LoginModal loginModal =
-                    new LoginModal(page);
+                    new LoginModal(
+                            page
+                    );
 
             loginModal.continueWithEmail();
 
             ScopelyAuthPage scopelyAuthPage =
-                    new ScopelyAuthPage(page);
+                    new ScopelyAuthPage(
+                            page
+                    );
 
             scopelyAuthPage.enterEmail(
                     Config.TEST_EMAIL
@@ -63,26 +77,43 @@ public class SaveAuthStateTest {
             );
 
             page.waitForURL(
-                    url ->
-                            url.contains("stumbleguys.com")
-                                    && !url.contains("id.scopely.com"),
+                    url -> url.matches(
+                            "^https://(www\\.)?stumbleguys\\.com(/.*)?$"
+                    ),
                     new Page.WaitForURLOptions()
-                            .setTimeout(180000)
+                            .setTimeout(
+                                    Config.MANUAL_OTP_TIMEOUT.toMillis()
+                            )
             );
 
-            // Allow the authenticated Stumble Guys session to finish initializing.
-            page.waitForTimeout(4000);
+            Locator loggedInAvatar =
+                    page.locator(
+                                    "img[alt='avatar'][src*='logged_in']:visible"
+                            )
+                            .first();
+
+            loggedInAvatar.waitFor(
+                    new Locator.WaitForOptions()
+                            .setState(
+                                    WaitForSelectorState.VISIBLE
+                            )
+                            .setTimeout(
+                                    Config.DEFAULT_TIMEOUT.toMillis()
+                            )
+            );
 
             context.storageState(
                     new BrowserContext.StorageStateOptions()
-                            .setPath(Paths.get("auth-state.json"))
+                            .setPath(
+                                    Paths.get(
+                                            "auth-state.json"
+                                    )
+                            )
             );
 
             System.out.println(
                     "Authenticated state saved to auth-state.json"
             );
-
-            page.waitForTimeout(5000);
         }
     }
 }
