@@ -2,6 +2,7 @@ package com.mirai.automation.web.pages;
 
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
+import com.microsoft.playwright.TimeoutError;
 import com.microsoft.playwright.options.WaitForSelectorState;
 import com.mirai.automation.config.Config;
 
@@ -21,8 +22,12 @@ public class LoginModal {
     public boolean isVisible() {
         continueWithEmailButton.waitFor(
                 new Locator.WaitForOptions()
-                        .setState(WaitForSelectorState.VISIBLE)
-                        .setTimeout(Config.DEFAULT_TIMEOUT.toMillis())
+                        .setState(
+                                WaitForSelectorState.VISIBLE
+                        )
+                        .setTimeout(
+                                Config.DEFAULT_TIMEOUT.toMillis()
+                        )
         );
 
         return continueWithEmailButton.isVisible();
@@ -31,8 +36,12 @@ public class LoginModal {
     public void continueWithEmail() {
         continueWithEmailButton.waitFor(
                 new Locator.WaitForOptions()
-                        .setState(WaitForSelectorState.VISIBLE)
-                        .setTimeout(Config.DEFAULT_TIMEOUT.toMillis())
+                        .setState(
+                                WaitForSelectorState.VISIBLE
+                        )
+                        .setTimeout(
+                                Config.DEFAULT_TIMEOUT.toMillis()
+                        )
         );
 
         long deadline =
@@ -46,12 +55,17 @@ public class LoginModal {
 
             try {
                 page.waitForURL(
-                        url -> url.contains("id.scopely.com"),
+                        url -> url.contains(
+                                "id.scopely.com"
+                        ),
                         new Page.WaitForURLOptions()
-                                .setTimeout(3000)
+                                .setTimeout(
+                                        Config.RETRY_TIMEOUT.toMillis()
+                                )
                 );
-            } catch (com.microsoft.playwright.TimeoutError ignored) {
-                // Retry while the page finishes initializing the login action.
+
+            } catch (TimeoutError ignored) {
+                // Retry while the login action finishes initializing.
             }
         }
 

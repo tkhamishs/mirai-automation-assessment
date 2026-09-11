@@ -2,8 +2,10 @@ package com.mirai.automation.web.pages;
 
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
+import com.microsoft.playwright.PlaywrightException;
 import com.microsoft.playwright.options.AriaRole;
 import com.microsoft.playwright.options.WaitForSelectorState;
+import com.mirai.automation.config.Config;
 
 public class HomePage {
 
@@ -17,7 +19,9 @@ public class HomePage {
 
         this.acceptCookiesButton = page.getByRole(
                 AriaRole.BUTTON,
-                new Page.GetByRoleOptions().setName("Accept All")
+                new Page.GetByRoleOptions()
+                        .setName("Accept All")
+                        .setExact(true)
         );
 
         this.menuButton = page.locator(
@@ -26,12 +30,41 @@ public class HomePage {
 
         this.loginButton = page.getByRole(
                 AriaRole.BUTTON,
-                new Page.GetByRoleOptions().setName("Login")
+                new Page.GetByRoleOptions()
+                        .setName("Login")
+                        .setExact(true)
         );
     }
 
     public void acceptCookies() {
-        acceptCookiesButton.click();
+        try {
+            acceptCookiesButton.waitFor(
+                    new Locator.WaitForOptions()
+                            .setState(
+                                    WaitForSelectorState.VISIBLE
+                            )
+                            .setTimeout(
+                                    Config.SHORT_TIMEOUT.toMillis()
+                            )
+            );
+
+            acceptCookiesButton.click();
+
+            acceptCookiesButton.waitFor(
+                    new Locator.WaitForOptions()
+                            .setState(
+                                    WaitForSelectorState.HIDDEN
+                            )
+                            .setTimeout(
+                                    Config.SHORT_TIMEOUT.toMillis()
+                            )
+            );
+
+        } catch (PlaywrightException exception) {
+            System.out.println(
+                    "Cookie consent was not displayed."
+            );
+        }
     }
 
     public void openLogin() {
@@ -39,7 +72,9 @@ public class HomePage {
 
         loginButton.waitFor(
                 new Locator.WaitForOptions()
-                        .setState(WaitForSelectorState.VISIBLE)
+                        .setState(
+                                WaitForSelectorState.VISIBLE
+                        )
         );
 
         loginButton.click();

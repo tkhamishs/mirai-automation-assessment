@@ -9,8 +9,6 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.time.Duration;
-
 public class MobileCheckoutPage {
 
     private final AndroidDriver driver;
@@ -155,7 +153,7 @@ public class MobileCheckoutPage {
             WebDriverWait cardFormWait =
                     new WebDriverWait(
                             driver,
-                            Duration.ofSeconds(10)
+                            Config.SHORT_TIMEOUT
                     );
 
             try {
