@@ -591,7 +591,7 @@ https://github.com/tkhamishs/mirai-automation-assessment
 
 Summary
 
-The main goal was to keep the test -mirai-automation-assessment/ios readable while separating browser interaction details from the test logic.
+The main goal was to keep the test scenarios readable while separating browser interaction details from the test logic.
 
 The main design choices are:
 
